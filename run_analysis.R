@@ -28,9 +28,8 @@ colnames(Data_Set)[461:502] <- rm_duplicated_col_fBodyGyro
 
 ####Extracts only the measurements on the mean and standard deviation for each measurement.
 ##select mean() & std() column
-meanCol <- grep("mean\\(\\)", colnames_full, value = TRUE)
-stdCol <- grep("std\\(\\)", colnames_full, value = TRUE)
-select_mean_std <- select(Data_Set, one_of(meanCol), one_of(stdCol))
+mean_std_Col <- grep("mean\\(\\)|std\\(\\)", colnames_full, value = TRUE)
+select_mean_std <- select(Data_Set, one_of(mean_std_Col))
 
 ##Read Train_set_label/Test_set_label/labelName
 train_set_label <- read.table("./UCI HAR Dataset/train/y_train.txt")
@@ -43,11 +42,8 @@ test_subject <- read.table("./UCI HAR Dataset/test/subject_test.txt")
 data_subject <- rbind(train_subject, test_subject)
 
 ####Merges the training and the test sets to create one data set.
-Data_Set <- cbind(data_subject$V1, data_label$V1,Data_Set)
-colnames_full[303:344] <- rm_duplicated_col_fBodyAcc
-colnames_full[382:423] <- rm_duplicated_col_fBodyAccJerk
-colnames_full[461:502] <- rm_duplicated_col_fBodyGyro
-colnames(Data_Set) <- c("subject", "activity", colnames_full)
+Data_Set <- cbind(data_subject$V1, data_label$V1,select_mean_std)
+colnames(Data_Set) <- c("subject", "activity", names(select_mean_std))
 
 ####Uses descriptive activity names to name the activities in the data set
 avtivity_labelName <- read.table("./UCI HAR Dataset/activity_labels.txt")
@@ -56,5 +52,5 @@ Data_Set$activity <- factor(Data_Set$activity, levels = avtivity_labelName[,1], 
 write.table(Data_Set, "tidy.txt", row.names = FALSE, quote = FALSE)
 
 ####From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
-Data_set_2 <- ddply(Data_Set, c("subject","activity"), numcolwise(mean))
-write.table(Data_set_2, "calculated_tidy.txt", row.names = FALSE, quote = FALSE)
+Data_Set_2 <- ddply(Data_Set, c("subject","activity"), numcolwise(mean))
+write.table(Data_Set_2, "calculated_tidy.txt", row.names = FALSE, quote = FALSE)
